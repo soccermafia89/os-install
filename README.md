@@ -1,7 +1,7 @@
 Role Name
 =========
 
-Mounts a boot and root device as a filesystem mnt.
+Mounts a boot and root device as a filesystem mount on /mnt.
 
 Requirements
 ------------
@@ -11,8 +11,8 @@ None
 Role Variables
 --------------
 
-- boot_device_name -- Boot device name, available on /dev/.  (Default "sdc")
-- root_device_name: -- Root device name, available on /dev/. (Default "sdd")
+- boot_device_name -- Boot device name, available on /dev/.
+- root_device_name: -- Root device name, available on /dev/.
 
 Dependencies
 ------------
