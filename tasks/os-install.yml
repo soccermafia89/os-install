@@ -76,6 +76,10 @@
 - name: Fix Sudoers Config
   command: /bin/bash -c "sed -i -e \"s/^Defaults    requiretty/#Defaults    requiretty/g\" /etc/sudoers"
 
+# Required for synchronize module to work on host machine.
+- name: Fix Sudoers TTY
+  command: /bin/bash -c "sed -i -e \"s/^Defaults    requiretty/#Defaults    requiretty/g\" /etc/sudoers"
+
 # Additional hardening steps
 
 - name: Set Default Runlevel
@@ -100,3 +104,6 @@
   copy:
     content: "set re=1"
     dest: "/home/{{ default_user }}/.vimrc"
+
+- name: Install epel-release
+  command: /bin/bash -c "yum -y install epel-release"
