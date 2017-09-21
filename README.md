@@ -20,6 +20,7 @@ Dependencies
 Example Playbook
 ----------------
 
+```
 - name: Mount Chroot
   hosts: localhost
   roles:
@@ -27,6 +28,7 @@ Example Playbook
   vars:
     boot_device_name: "sdc"
     root_device_name: "sdd"
+```
 
 License
 -------
