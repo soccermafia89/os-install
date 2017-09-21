@@ -1,2 +1,4 @@
 ---
-# defaults file for chroot-mount
+
+boot_device_name: "sdc"
+root_device_name: "sdd"
