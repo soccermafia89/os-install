@@ -1,0 +1,102 @@
+# Networking needs to be setup before we can install in the chroot
+- name: Copy Network
+  copy: 
+    src: "network"
+    dest: "/etc/sysconfig/network"
+
+- name: Copy Network if-cfg
+  copy: 
+    src: "ifcfg-eth0"
+    dest: "/etc/sysconfig/network-scripts/ifcfg-eth0"
+
+- name: Disable IP6
+  lineinfile: 
+    line: "sysctl.conf:net.ipv6.conf.all.disable_ipv6 = 1"
+    dest: "/etc/sysctl.conf"
+    regexp: "sysctl.conf:net.ipv6.conf.all.disable_ipv6 = 1"
+
+- name: Copy Mitre Proxy Environment Variables
+  copy:
+    src: "organization.proxy.sh"
+    dest: "/etc/profile.d/{{ organization }}.proxy.sh"
+
+- name: Install Kernel
+  command: /bin/bash -c "yum install -y kernel"
+
+- name: Remove Unnecessary Packages
+  command: /bin/bash -c "yum remove -y cpuspeed abrt* at hal* iptables-ipv6 irqbalance kexec-tools psacct quota sendmail smartmontools rng-tools mdadm chrony"
+
+- name: Install Necessary Packages
+  command: /bin/bash -c "yum install -y grub2 sudo openssh-server yum-plugin-fastestmirror e2fsprogs dhclient yum-presto audit postfix cronie microcode_ctl"
+
+- name: Fix Vim setting for root
+  copy:
+    content: "set re=1"
+    dest: "/root/.vimrc"
+
+- name: Set Locale
+  command: /bin/bash -c "localedef -i en_US -f UTF-8 en_US.UTF-8"
+
+# Setup Root Environment
+- name: Copy base bashrc file
+  copy:
+    src: "bashrc"
+    dest: "/root/.bashrc"
+
+# We do not care about errors here.
+- name: Install Grub2 on Device
+  command: /bin/bash -c "grub2-install /dev/{{ boot_device_name }}"
+  failed_when: False
+
+- name: Setup Grub Config
+  copy: 
+    src: "grub"
+    dest: "/etc/default/grub"
+
+- name: Setup Grub2 on Device
+  command: /bin/bash -c "grub2-mkconfig -o /boot/grub2/grub.cfg"
+
+# The next set of steps are not required to have fully bootable volumes, they will instead make the machine optimized for Ansible management.
+
+- name: Install Nice to have Software
+  command: /bin/bash -c "yum install -y openssh-clients vim git lsof ntp"
+
+# Just following the guide, something to do with setting SELinux properly.
+- name: Touch autorelabel
+  file: 
+    path: "/.autorelabel"
+    state: "touch"
+
+- name: Yum Update
+  command: /bin/bash -c "yum update -y"
+
+- name: Fix SSHD Config
+  command: /bin/bash -c "sed -i -e \"s/^PasswordAuthentication yes/PasswordAuthentication no/g\" /etc/ssh/sshd_config"
+
+- name: Fix Sudoers Config
+  command: /bin/bash -c "sed -i -e \"s/^Defaults    requiretty/#Defaults    requiretty/g\" /etc/sudoers"
+
+# Additional hardening steps
+
+- name: Set Default Runlevel
+  command: /bin/bash -c "systemctl set-default multi-user.target"
+
+# Setup Default User
+
+# Setup Default Account
+- name: Add User
+  command: /bin/bash -c "id -u {{ default_user }} &>/dev/null || useradd {{ default_user }}"
+
+- name: Add User to sudoers
+  lineinfile:
+    line: "%{{ default_user }}     ALL=(ALL)       NOPASSWD: ALL"
+    dest: "/etc/sudoers"
+    regexp: "%{{ default_user }}     ALL=(ALL)       NOPASSWD: ALL"
+
+- name: Remove User Passwords
+  command: /bin/bash -c "passwd {{ default_user }} -d"
+
+- name: Fix Vim setting for user
+  copy:
+    content: "set re=1"
+    dest: "/home/{{ default_user }}/.vimrc"
