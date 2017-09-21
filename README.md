@@ -13,6 +13,10 @@ Role Variables
 
 - boot_device_name -- Boot device name, available on /dev/.
 - root_device_name: -- Root device name, available on /dev/.
+- http_proxy: "gatekeeper.company.org:80"
+- https_proxy: "gatekeeper.company.org:80"
+- no_proxy: "/var/run/docker.sock,.company.org,localhost,127.0.0.1"
+
 - default_user: -- Default login username to add to the system.
 - organization: -- Name to prepend proxy file.
 
